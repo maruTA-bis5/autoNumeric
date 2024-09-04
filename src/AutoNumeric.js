@@ -1164,6 +1164,7 @@ export default class AutoNumeric {
      */
     _createEventListeners() {
         this.formulaMode = false;
+        this.compositioning = false;
         // Create references to the event handler functions, so we can then cleanly removes those listeners if needed
         // That would not be possible if we used closures directly in the event handler declarations
         this._onFocusInFunc = e => { this._onFocusIn(e); };
@@ -1178,6 +1179,8 @@ export default class AutoNumeric {
         this._onDropFunc = e => { this._onDrop(e); };
         this._onKeydownGlobalFunc = e => { this._onKeydownGlobal(e); };
         this._onKeyupGlobalFunc = e => { this._onKeyupGlobal(e); };
+        this._onCompositioninitFunc = e => { this._onCompositioninit(e); };
+        this._onCompositionendFunc = e => { this._onCompositionend(e); };
 
         // Add the event listeners
         this.domElement.addEventListener('focusin', this._onFocusInFunc, false);
@@ -1192,6 +1195,8 @@ export default class AutoNumeric {
         this.domElement.addEventListener('paste', this._onPasteFunc, false);
         this.domElement.addEventListener('wheel', this._onWheelFunc, false);
         this.domElement.addEventListener('drop', this._onDropFunc, false);
+        this.domElement.addEventListener('compositioninit', this._onCompositioninitFunc, false);
+        this.domElement.addEventListener('compositionend', this._onCompositionendFunc, false);
         this._setupFormListener();
 
         // Keep track if the event listeners have been initialized on this object
@@ -6650,6 +6655,9 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
      * @param {KeyboardEvent} e
      */
     _onKeypress(e) {
+        if (this.compositioning) {
+            return;
+        }
         if (this.formulaMode) {
             // Accept the backspace, delete, arrow, home and end keys
             if (this._acceptNonPrintableKeysInFormulaMode()) {
@@ -7647,6 +7655,14 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
                 this.constructor._reformatAltHovered(anElement);
             }
         }
+    }
+
+    _onCompositioninit(e) { // eslint-disable-line no-unused-vars
+        this.compositioning = true;
+    }
+
+    _onCompositionend(e) { // eslint-disable-line no-unused-vars
+        this.compositioning = false;
     }
 
     /**
