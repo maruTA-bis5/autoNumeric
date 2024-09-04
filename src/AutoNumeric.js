@@ -1179,7 +1179,7 @@ export default class AutoNumeric {
         this._onDropFunc = e => { this._onDrop(e); };
         this._onKeydownGlobalFunc = e => { this._onKeydownGlobal(e); };
         this._onKeyupGlobalFunc = e => { this._onKeyupGlobal(e); };
-        this._onCompositioninitFunc = e => { this._onCompositioninit(e); };
+        this._onCompositionstartFunc = e => { this._onCompositionstart(e); };
         this._onCompositionendFunc = e => { this._onCompositionend(e); };
 
         // Add the event listeners
@@ -1195,7 +1195,7 @@ export default class AutoNumeric {
         this.domElement.addEventListener('paste', this._onPasteFunc, false);
         this.domElement.addEventListener('wheel', this._onWheelFunc, false);
         this.domElement.addEventListener('drop', this._onDropFunc, false);
-        this.domElement.addEventListener('compositioninit', this._onCompositioninitFunc, false);
+        this.domElement.addEventListener('compositionstart', this._onCompositionstartFunc, false);
         this.domElement.addEventListener('compositionend', this._onCompositionendFunc, false);
         this._setupFormListener();
 
@@ -6529,6 +6529,9 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
      * @param {KeyboardEvent} e
      */
     _onKeydown(e) {
+        if (this.compositioning) {
+            return;
+        }
         this.formatted = false; // Keep track if the element has been formatted already. If that's the case, prevent further format calculations.
         this.isEditing = true; // Keep track if the user is currently editing the element manually
 
@@ -6728,6 +6731,9 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
      * @param {KeyboardEvent} e
      */
     _onKeyup(e) {
+        if (this.compositioning) {
+            return;
+        }
         this.isEditing = false;
         this.keydownEventCounter = 0; // Reset the keydown events counter
 
@@ -7657,12 +7663,25 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
         }
     }
 
-    _onCompositioninit(e) { // eslint-disable-line no-unused-vars
+    /**
+     * TODO explain
+     *
+     * @param {CompositionEvent} e
+     * @private
+     */
+    _onCompositionstart(e) { // eslint-disable-line no-unused-vars
         this.compositioning = true;
     }
 
+    /**
+     * TODO explain
+     *
+     * @param {CompositionEvent} e
+     * @private
+     */
     _onCompositionend(e) { // eslint-disable-line no-unused-vars
         this.compositioning = false;
+        this._onKeypress(new KeyboardEvent('keypress', { key: 'Enter' }));
     }
 
     /**
