@@ -1226,6 +1226,8 @@ export default class AutoNumeric {
         this.domElement.removeEventListener('paste', this._onPasteFunc, false);
         this.domElement.removeEventListener('wheel', this._onWheelFunc, false);
         this.domElement.removeEventListener('drop', this._onDropFunc, false);
+        this.domElement.removeEventListener('compositionstart', this._onCompositionstartFunc, false);
+        this.domElement.removeEventListener('compositionend', this._onCompositionendFunc, false);
         this._removeFormListener();
 
         // Keep track if the event listeners have been initialized on this object
@@ -7664,7 +7666,11 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
     }
 
     /**
-     * TODO explain
+     * Handler for 'compositionstart' events. 
+     * 
+     * When using IME (Input Method Editor) to input characters, the browser will fire a 'compositionstart' event when the user starts typing in the IME,
+     * and a 'compositionend' event when the user has finished typing and the characters are committed.
+     * During the composition, the value is not yet formatted, and the user can still change the input.
      *
      * @param {CompositionEvent} e
      * @private
@@ -7674,14 +7680,18 @@ To solve that, you'd need to either set \`decimalPlacesRawValue\` to \`null\`, o
     }
 
     /**
-     * TODO explain
-     *
+     * Handler for 'compositionend' events.
+     * 
      * @param {CompositionEvent} e
      * @private
      */
-    _onCompositionend(e) { // eslint-disable-line no-unused-vars
+    _onCompositionend(e) {
         this.compositioning = false;
-        this._onKeypress(new KeyboardEvent('keypress', { key: 'Enter' }));
+
+        // Trigger format
+        this.formatted = false;
+        const keyupEvent = new KeyboardEvent('keyup', { key: 'Enter' });
+        e.target.dispatchEvent(keyupEvent);
     }
 
     /**
